@@ -102,3 +102,88 @@ volumes:
   dbdata:                     # Definiert ein Volume mit dem Namen "dbdata"
 
 ```
+---
+Perfekt! 👇
+Wir gehen jetzt **Lernziel 2** durch:
+
+> **„Sie kennen die Syntax von `docker-compose.yml` und können die Schlüsselwörter korrekt anwenden“**
+> (laut [Lehrmittel M347](https://gbssg.gitlab.io/m347/docker-compose/docker-compose-einsetzen/#docker-compose-datei))
+
+---
+
+## ✅ Lernziel 2: Syntax & Schlüsselwörter von `docker-compose.yml`
+
+---
+
+### 📌 **Was ist `docker-compose.yml` und wofür ist sie da?**
+
+➡️ **Wurde bereits in Lernziel 1 erklärt** – kurz gesagt:
+
+* Dient dazu, mehrere Container (Services) mit einer einzigen Datei zu definieren und zu starten.
+* Anstatt lange `docker run`-Befehle zu tippen, **beschreibst du alles in YAML**.
+
+> 📚 Quelle:
+> [https://gbssg.gitlab.io/m347/docker-compose/docker-compose-einsetzen/#docker-compose-datei](https://gbssg.gitlab.io/m347/docker-compose/docker-compose-einsetzen/#docker-compose-datei)
+
+---
+
+### 📄 **Struktur & Syntax der `docker-compose.yml` – laut Lehrmittel & Praxis**
+
+---
+
+#### 🔧 Basisstruktur:
+
+```yaml
+version: '3.8'
+services:
+  <servicename>:
+    image: <image-name>
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "hostPort:containerPort"
+    environment:
+      - VARIABLENNAME=Wert
+    depends_on:
+      - anderer-service
+    volumes:
+      - ./lokal:/container
+```
+
+---
+
+### 🧾 Erklärung wichtiger Schlüsselwörter:
+
+| Schlüsselwort    | Bedeutung                                                                 |
+| ---------------- | ------------------------------------------------------------------------- |
+| `version`        | Gibt an, welche Compose-Version verwendet wird (z. B. `'3.8'`)            |
+| `services`       | Block, in dem alle Container (Dienste) definiert sind                     |
+| `<servicename>`  | Der Name des Dienstes (z. B. `web`, `mongo`, `db`)                        |
+| `image`          | Docker-Image, das verwendet wird (z. B. `mongo:6`)                        |
+| `build`          | Bauanweisung für eigenes Image (anstelle von `image`)                     |
+| `context`        | Verzeichnis, das als Build-Kontext verwendet wird (meist `.`)             |
+| `dockerfile`     | Pfad zur Dockerfile (optional, falls nicht `Dockerfile` heißt)            |
+| `ports`          | Verbindet Port vom Host mit Container (z. B. `"5000:80"`)                 |
+| `environment`    | Setzt Umgebungsvariablen für den Container (`VAR=wert`)                   |
+| `depends_on`     | Gibt an, welche Services zuerst starten sollen                            |
+| `volumes`        | Externe Speicherung außerhalb des Containers                              |
+| `networks`       | Definiert Netzwerke (optional, bei komplexen Setups)                      |
+| `restart`        | Gibt an, ob Container bei Absturz neu starten (`always`, `on-failure`, …) |
+| `command`        | Startbefehl des Containers überschreiben                                  |
+| `container_name` | Benutzerdefinierter Container-Name (anstatt automatisch generiertem)      |
+
+---
+
+### ✅ Syntax-Regeln (laut YAML-Spezifikation)
+
+| Regel                            | Beispiel                   |
+| -------------------------------- | -------------------------- |
+| Einrückung mit **2 Leerzeichen** | `key:\n  unterkey: wert`   |
+| Listen mit `-` beginnen          | `ports:\n  - "5000:80"`    |
+| Kommentare mit `#`               | `# Dies ist ein Kommentar` |
+| Keine Tabulatoren (`\t`)         | Nur Leerzeichen erlaubt    |
+
+---
+
+
