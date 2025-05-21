@@ -59,27 +59,46 @@ objekt:
 ### 🧪 Beispiel `docker-compose.yml`
 
 ```yaml
+# Gibt die verwendete Compose-Datei-Spezifikation an (Version 3.8 ist modern und stabil)
 version: '3.8'
 
+# Beginnt die Definition aller Containerdienste
 services:
+
+  # Erster Dienst mit dem Namen "web" (unsere .NET Web-API)
   web:
+
+    # Baue das Image aus einem lokalen Dockerfile
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: .              # Verzeichnis mit dem Quellcode und Dockerfile (aktuelles Verzeichnis)
+      dockerfile: Dockerfile # Name der Dockerfile-Datei, die verwendet werden soll
+
+    # Mappe Port 5000 des Hosts auf Port 80 im Container
     ports:
-      - "5000:80"
+      - "5000:80"             # localhost:5000 → Container-Port 80
+
+    # Setze Umgebungsvariable, damit ASP.NET Core auf Port 80 lauscht
     environment:
       - ASPNETCORE_URLS=http://+:80
+
+    # Warte mit dem Start, bis der "db"-Container läuft
     depends_on:
       - db
 
+  # Zweiter Dienst: MongoDB-Datenbank
   db:
-    image: mongo:6
-    ports:
-      - "27017:27017"
-    volumes:
-      - dbdata:/data/db
+    image: mongo:6            # Verwende das offizielle MongoDB-Image, Version 6
 
+    # Mappe MongoDB-Port vom Container auf denselben Port des Hosts
+    ports:
+      - "27017:27017"         # localhost:27017 → Container-Port 27017
+
+    # Erstelle ein Volume für persistente Speicherung (damit Daten beim Neustart erhalten bleiben)
+    volumes:
+      - dbdata:/data/db       # Mountet das Volume "dbdata" in den Container unter /data/db
+
+# Volumes werden außerhalb der Container gespeichert (z. B. unter /var/lib/docker/volumes)
 volumes:
-  dbdata:
+  dbdata:                     # Definiert ein Volume mit dem Namen "dbdata"
+
 ```
