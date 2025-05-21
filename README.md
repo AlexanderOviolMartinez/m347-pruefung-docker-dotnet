@@ -186,4 +186,92 @@ services:
 
 ---
 
+## ✅ Lernziel 3: `docker compose` Befehle und Optionen
+
+---
+
+### 📌 Was macht `docker compose`?
+
+* `docker compose` liest die Datei `docker-compose.yml`
+* Startet, konfiguriert und verbindet mehrere Container auf einmal
+* Spart Zeit und erspart lange `docker run`-Befehle
+* Verwaltert Volumes, Netzwerke, Images etc. automatisch
+
+---
+
+### 🔧 Wichtigste Befehle im Überblick
+
+| Befehl                      | Bedeutung                                                          |
+| --------------------------- | ------------------------------------------------------------------ |
+| `docker compose up`         | Startet alle Container gemäß `docker-compose.yml`                  |
+| `docker compose down`       | Stoppt und entfernt alle gestarteten Container                     |
+| `docker compose build`      | Baut die Container neu, gemäß Dockerfile                           |
+| `docker compose ps`         | Zeigt laufende Container der aktuellen `docker-compose.yml` an     |
+| `docker compose logs`       | Zeigt die Logs aller Container an                                  |
+| `docker compose exec <srv>` | Führt einen Befehl in einem laufenden Container aus (z. B. `bash`) |
+
+---
+
+### 🧪 Zusatzoptionen (`-d`, `--build`, etc.)
+
+| Option             | Bedeutung                                                                       |
+| ------------------ | ------------------------------------------------------------------------------- |
+| `-d`               | *Detached mode* – Container laufen im Hintergrund                               |
+| `--build`          | Erzwingt beim `up` das **Neu-Bauen** der Images, auch wenn sie schon existieren |
+| `--no-cache`       | Baut Images **ohne Verwendung des Caches** (immer komplett neu)                 |
+| `--remove-orphans` | Entfernt Container, die nicht mehr in der `docker-compose.yml` stehen           |
+| `--force-recreate` | Erzwingt das **Neuerstellen** aller Container, auch ohne Änderungen             |
+
+---
+
+### 🧾 Beispiel-Ablauf
+
+#### Schritt 1 – Container starten:
+
+```bash
+docker compose up --build -d
+```
+
+| Teil      | Bedeutung                                         |
+| --------- | ------------------------------------------------- |
+| `up`      | Starte alle Container                             |
+| `--build` | Baue alle Images vorher neu (nach Dockerfile)     |
+| `-d`      | Starte im Hintergrund (nicht im aktiven Terminal) |
+
+---
+
+#### Schritt 2 – Container stoppen:
+
+```bash
+docker compose down
+```
+
+| Teil   | Bedeutung                                                 |
+| ------ | --------------------------------------------------------- |
+| `down` | Stoppe und lösche alle Container aus diesem Compose-Stack |
+
+---
+
+#### Optional: Komplett neu starten
+
+```bash
+docker compose down --volumes
+docker compose build --no-cache
+docker compose up -d
+```
+
+---
+
+### 💡 Typische Anwendungsfälle
+
+| Ziel                                 | Befehl                                                |
+| ------------------------------------ | ----------------------------------------------------- |
+| Schnell Container starten            | `docker compose up -d`                                |
+| Änderungen an Code übernehmen        | `docker compose up --build -d`                        |
+| Probleme lösen (neu bauen & starten) | `docker compose down && docker compose up --build -d` |
+
+---
+
+
+
 
