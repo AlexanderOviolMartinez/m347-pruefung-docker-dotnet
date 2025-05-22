@@ -497,8 +497,5 @@ docker run -p 5000:80 helloapi
 
 ---
 
-Wenn du willst, formatiere ich diesen Abschnitt als **Markdown für dein GitHub-Repo** – oder wir machen weiter mit dem nächsten Lernziel:
-👉 **„Dockerfiles im Zusammenspiel mit docker-compose korrekt verwenden“**
 
-Sag einfach: ✅ oder „weiter“!
 
