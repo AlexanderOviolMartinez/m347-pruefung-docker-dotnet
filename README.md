@@ -629,6 +629,139 @@ docker compose up --build -d
 | `ports:`        | Macht den Dienst im Browser/Netzwerk erreichbar   |
 
 ---
+Super! Jetzt kommt **Lernziel 7**, basierend auf dem M347-Lehrmittel:
+
+> **„Sie können mit dotnet Web- und Konsolen-Anwendungen korrekt umgehen und containerisieren.“**
+> 🔗 [Lehrmittel-Abschnitt – .NET-Anwendung containerisieren](https://gbssg.gitlab.io/m347/dockerfiles/dotnet-containerisieren/)
+
+---
+
+## ✅ Lernziel 7: .NET Web- und Konsolen-Anwendungen korrekt containerisieren
+
+---
+
+### 📌 Allgemeines
+
+| Bereich            | Erklärung                                                                      |
+| ------------------ | ------------------------------------------------------------------------------ |
+| `.NET Web-App`     | Meist ASP.NET Core / Web API / Razor / Blazor → reagiert auf HTTP-Anfragen     |
+| `.NET Console-App` | Führt Befehle in der Konsole aus, kein Webserver                               |
+| Containerisierung  | Bedeutet: Anwendung läuft in einem isolierten, plattformunabhängigen Container |
+
+Ziel: Du kannst beides in ein Docker-Image packen, starten und via Compose orchestrieren.
+
+---
+
+## 🧪 Schritt-für-Schritt: Web-App
+
+---
+
+### 🔧 1. Web-App erstellen
+
+```bash
+dotnet new web -n WebApp
+cd WebApp
+```
+
+Optional: In `Program.cs` die Root-Route definieren:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+app.MapGet("/", () => "Hello from WebApp!");
+app.Run();
+```
+
+---
+
+### 📄 2. Dockerfile erstellen
+
+```dockerfile
+# WebApp/Dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY . .
+RUN dotnet publish -c Release -o /app
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "WebApp.dll"]
+```
+
+---
+
+### 🧪 3. Build & Run
+
+```bash
+docker build -t webapp .
+docker run -p 5000:80 -e ASPNETCORE_URLS=http://+:80 webapp
+```
+
+Dann im Browser:
+👉 [http://localhost:5000](http://localhost:5000)
+
+---
+
+## 🧪 Schritt-für-Schritt: Konsolen-App
+
+---
+
+### 🔧 1. Konsolen-App erstellen
+
+```bash
+dotnet new console -n HelloConsole
+cd HelloConsole
+```
+
+Optional: In `Program.cs`
+
+```csharp
+Console.WriteLine("Hello from Dockerized Console App!");
+```
+
+---
+
+### 📄 2. Dockerfile erstellen
+
+```dockerfile
+# HelloConsole/Dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY . .
+RUN dotnet publish -c Release -o /app
+
+FROM mcr.microsoft.com/dotnet/runtime:8.0
+WORKDIR /app
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "HelloConsole.dll"]
+```
+
+---
+
+### 🧪 3. Build & Run
+
+```bash
+docker build -t helloconsole .
+docker run helloconsole
+```
+
+> Ausgabe im Terminal:
+> `Hello from Dockerized Console App!`
+
+---
+
+## ✅ Vergleich Web vs. Konsole
+
+| Eigenschaft           | Web-App              | Konsolen-App                 |
+| --------------------- | -------------------- | ---------------------------- |
+| Start über Browser    | ✅                    | ❌ (nur Terminal)             |
+| Ports freigeben nötig | ✅ (z. B. 5000:80)    | ❌ (keine Netzwerknutzung)    |
+| Basis-Image           | `aspnet`             | `runtime`                    |
+| Containerstart        | Browser öffnet Seite | Zeigt direkt Terminalausgabe |
+
+---
+
 
 
 
