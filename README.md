@@ -497,5 +497,140 @@ docker run -p 5000:80 helloapi
 
 ---
 
+> **„Sie können Dockerfiles im Zusammenspiel mit docker compose korrekt verwenden“**
+> 🔗 Referenz im Lehrmittel:
+> [https://gbssg.gitlab.io/m347/docker-compose/docker-compose-einsetzen/#eigenes-image-verwenden](https://gbssg.gitlab.io/m347/docker-compose/docker-compose-einsetzen/#eigenes-image-verwenden)
+
+---
+
+## ✅ Lernziel 6: Dockerfile mit `docker-compose.yml` kombinieren
+
+---
+
+### 📌 Allgemein: Worum geht’s?
+
+Wenn du ein eigenes Projekt (z. B. eine .NET-App) hast, das mit einem **Dockerfile gebaut wird**, kannst du es direkt in `docker-compose.yml` einbinden.
+Docker Compose baut dann **automatisch das Image** aus dem Dockerfile.
+
+---
+
+### 🧠 Warum ist das sinnvoll?
+
+| Vorteil                          | Erklärung                                                  |
+| -------------------------------- | ---------------------------------------------------------- |
+| Kein `docker build` nötig        | Compose übernimmt den Build                                |
+| Weniger Fehlerquellen            | Konsistente Nutzung über `up` / `down`                     |
+| Einfach für Mehrcontainer-Setups | Du kannst deine App + DB + Tools in einem File starten     |
+| Ideal für Multistage-Dockerfiles | Compose nutzt dieselbe Datei, unabhängig vom Build-Prozess |
+
+---
+
+## 🔧 Aufbau in der Praxis – mit Kommentar
+
+```yaml
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .               # Verzeichnis, in dem sich Dockerfile und Code befinden
+      dockerfile: Dockerfile  # (optional) falls Datei nicht „Dockerfile“ heißt
+    ports:
+      - "5000:80"              # Host-Port 5000 → Container-Port 80
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+```
+
+---
+
+### 📄 Was macht Compose intern?
+
+```text
+docker-compose:
+→ Liest build.context (z. B. ".")
+→ Findet dort das Dockerfile
+→ Führt `docker build -t <autoname>` aus
+→ Startet den Container basierend auf diesem Image
+```
+
+---
+
+## 🧪 Schritt-für-Schritt Beispiel: API mit Dockerfile & Compose
+
+---
+
+### 1. Projektverzeichnis
+
+```bash
+dotnet new web -n HelloApi
+cd HelloApi
+```
+
+---
+
+### 2. Dockerfile einfügen
+
+```dockerfile
+# Dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY . .
+RUN dotnet publish -c Release -o /app
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "HelloApi.dll"]
+```
+
+---
+
+### 3. docker-compose.yml erstellen
+
+```yaml
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+```
+
+---
+
+### 4. Compose starten
+
+```bash
+docker compose up --build -d
+```
+
+→ Öffne im Browser:
+`http://localhost:5000`
+
+---
+
+### ✅ Zusammenfassung
+
+| Element         | Aufgabe                                           |
+| --------------- | ------------------------------------------------- |
+| `build.context` | Sagt Compose, wo der Code + Dockerfile liegen     |
+| `dockerfile:`   | (optional) → falls Datei nicht `Dockerfile` heißt |
+| `environment:`  | z. B. um ASP.NET auf richtigen Port zu zwingen    |
+| `ports:`        | Macht den Dienst im Browser/Netzwerk erreichbar   |
+
+---
+
+
+
 
 
