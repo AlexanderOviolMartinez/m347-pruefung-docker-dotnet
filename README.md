@@ -273,5 +273,116 @@ docker compose up -d
 ---
 
 
+## ✅ Lernziel 4: Unbekannte Images mithilfe der Dokumentation korrekt einsetzen
 
+> **„Sie können für Sie unbekannte Images anhand verfügbarer Dokumentationen korrekte docker compose Kompositionen aufbauen.“**
+
+---
+
+### 📌 Allgemeines – was du dafür wissen musst:
+
+| Punkt                    | Erklärung                                                                                 |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| 📦 Docker Hub            | Zentrale Plattform mit tausenden Images: [https://hub.docker.com](https://hub.docker.com) |
+| 🔎 Image-Doku lesen      | Jedes Image hat eine Doku mit wichtigen Infos wie `ports`, `volumes`, `environment`       |
+| 🧱 docker-compose Aufbau | Du baust den `docker-compose.yml`-Block anhand dieser Infos zusammen                      |
+| 💬 Keine Doku = Risiko   | Wenn keine Angaben vorhanden sind, musst du selbst testen (aber das ist selten nötig)     |
+| 📁 Volumes beachten      | Viele Dienste speichern Daten → du solltest `volumes` definieren                          |
+| 🧪 Umgebungsvariablen    | Viele Images brauchen `PASSWORD`, `DB_NAME`, etc. – stehen immer in der Beschreibung      |
+
+---
+
+### 🔧 Schritt-für-Schritt-Beispiel: **Adminer + PostgreSQL**
+
+Ziel:
+Du willst ein Image verwenden, das du **nicht kennst**, z. B. `adminer` (eine Datenbank-Oberfläche).
+Du suchst es auf Docker Hub:
+👉 [https://hub.docker.com/\_/adminer](https://hub.docker.com/_/adminer)
+
+---
+
+### 🧭 Schritt 1: Dokumentation lesen
+
+Dort findest du:
+
+* Image: `adminer`
+* Port: **8080**
+* Keine speziellen Umgebungsvariablen nötig
+
+Jetzt suchst du z. B. `postgres` auf Docker Hub:
+👉 [https://hub.docker.com/\_/postgres](https://hub.docker.com/_/postgres)
+
+Du findest:
+
+* Umgebungsvariablen:
+
+  * `POSTGRES_USER`
+  * `POSTGRES_PASSWORD`
+  * `POSTGRES_DB`
+* Port: **5432**
+
+---
+
+### 🧾 Schritt 2: docker-compose.yml erstellen
+
+```yaml
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=adminpass
+      - POSTGRES_DB=beispiel_db
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  dbdata:
+```
+
+---
+
+### 🧪 Schritt 3: Starten und testen
+
+```bash
+docker compose up -d
+```
+
+Öffne dann im Browser:
+
+```
+http://localhost:8080
+```
+
+Daten zum Einloggen:
+
+* **System:** PostgreSQL
+* **Server:** db
+* **Benutzer:** admin
+* **Passwort:** adminpass
+* **Datenbank:** beispiel\_db
+
+---
+
+### ✅ Zusammenfassung der Methode
+
+| Schritt                         | Was tun?                                                         |
+| ------------------------------- | ---------------------------------------------------------------- |
+| 1. Image auf Docker Hub suchen  | z. B. `redis`, `mysql`, `adminer`, `mongo`, `wordpress`, `nginx` |
+| 2. `ports` & `env` notieren     | Welche Ports & Variablen braucht das Image?                      |
+| 3. docker-compose.yml erstellen | `image`, `ports`, `environment`, `volumes`, `depends_on`         |
+| 4. Testen                       | `docker compose up -d`, dann via Browser oder CLI                |
+
+---
 
