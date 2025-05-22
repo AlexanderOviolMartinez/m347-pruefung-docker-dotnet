@@ -386,3 +386,119 @@ Daten zum Einloggen:
 
 ---
 
+> **„Sie können Dockerfiles für Multistage Builds im Zusammenhang mit dotnet aufbauen“**
+> 🔗 Referenz im Lehrmittel:
+> [https://gbssg.gitlab.io/m347/dockerfiles/multistage-builds/](https://gbssg.gitlab.io/m347/dockerfiles/multistage-builds/)
+
+---
+
+## ✅ Lernziel 5: Multistage-Dockerfiles für .NET
+
+---
+
+### 📌 Was ist ein Multistage-Build?
+
+| Begriff              | Erklärung                                                              |
+| -------------------- | ---------------------------------------------------------------------- |
+| **Multistage-Build** | Technik, bei der man mehrere Images in einem Dockerfile kombiniert     |
+| **Ziel**             | Das finale Image soll **klein**, **sicher** und **schnell** sein       |
+| **Typisch für .NET** | Erst mit SDK bauen, dann nur das Ergebnis ins Runtime-Image kopieren   |
+| **Vorteile**         | Quellcode, Buildtools & Temp-Dateien landen **nicht** im finalen Image |
+
+---
+
+## 📄 Struktur eines typischen Multistage-Dockerfiles für .NET
+
+```dockerfile
+# -------- BUILD-STAGE --------
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY . .
+RUN dotnet publish -c Release -o /app
+
+# -------- RUNTIME-STAGE --------
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "HelloApi.dll"]
+```
+
+---
+
+### 🔧 Erklärung – Zeile für Zeile
+
+| Code                            | Bedeutung                                                   |
+| ------------------------------- | ----------------------------------------------------------- |
+| `FROM ... AS build`             | Starte erste Phase mit vollem SDK (Compiler etc.)           |
+| `WORKDIR /src`                  | Arbeitsverzeichnis im Container                             |
+| `COPY . .`                      | Kopiere alle Dateien vom Host in den Container              |
+| `RUN dotnet publish -c Release` | Baue das Projekt (Release-Modus, kompiliert in `/app`)      |
+| `FROM ...` (zweites FROM)       | Starte neue Phase mit nur Runtime (schlankes Image)         |
+| `COPY --from=build /app .`      | Kopiere das Ergebnis vom vorherigen Stage in das neue Image |
+| `ENTRYPOINT ["dotnet", "..."]`  | Startbefehl beim Containerstart                             |
+
+---
+
+## 🧪 Schritt-für-Schritt Tutorial: .NET Minimal API mit Multistage-Dockerfile
+
+---
+
+### 1. 📦 Projekt erstellen
+
+```bash
+dotnet new web -n HelloApi
+cd HelloApi
+```
+
+---
+
+### 2. ✏️ Dockerfile erstellen
+
+```bash
+touch Dockerfile
+```
+
+Inhalt:
+
+```dockerfile
+# -------- BUILD-STAGE --------
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY . .
+RUN dotnet publish -c Release -o /app
+
+# -------- RUNTIME-STAGE --------
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "HelloApi.dll"]
+```
+
+---
+
+### 3. 🏗️ Image bauen und Container starten
+
+```bash
+docker build -t helloapi .
+docker run -p 5000:80 helloapi
+```
+
+→ Im Browser: `http://localhost:5000`
+
+---
+
+### ✅ Vorteile auf einen Blick
+
+| Vorteil             | Erklärung                                                    |
+| ------------------- | ------------------------------------------------------------ |
+| 🧼 Klein & sicher   | Nur Runtime enthalten, kein Source-Code oder Build-Werkzeuge |
+| ⚡ Schnell & schlank | Reduziertes Image, weniger Angriffsfläche                    |
+| 🔁 Wiederverwendbar | Gleicher Build-Prozess für Dev/Test/Prod                     |
+
+---
+
+Wenn du willst, formatiere ich diesen Abschnitt als **Markdown für dein GitHub-Repo** – oder wir machen weiter mit dem nächsten Lernziel:
+👉 **„Dockerfiles im Zusammenspiel mit docker-compose korrekt verwenden“**
+
+Sag einfach: ✅ oder „weiter“!
+
